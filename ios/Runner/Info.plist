@@ -45,5 +45,16 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<array>
+     <dict>
+      <key>CFBundleTypeRole</key>
+      <string>Editor</string>
+      <key>CFBundleURLSchemes</key>
+      <array>
+       <string>***IF YOU HAVE FACEBOOK SIGN IN CLIENT ID, TYPE HERE***</string>
+       <string>com.googleusercontent.apps.419490598798-2o15ajgt3smf7cf1tvljlsvjiracuqid.apps.googleusercontent.com</string>
+      </array>
+     </dict>
+    </array>
 </dict>
 </plist>

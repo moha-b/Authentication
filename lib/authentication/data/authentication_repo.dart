@@ -1,3 +1,6 @@
+import 'package:authentication/authentication/data/model/user_model.dart';
+
 abstract class AuthRepository {
-  Future<Map<String, dynamic>?> signInWithGoogle();
+  Future<User> signInWithGoogle();
+  Future<User> signInWithFacebook();
 }

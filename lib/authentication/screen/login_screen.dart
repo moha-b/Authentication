@@ -27,20 +27,33 @@ class LoginScreen extends StatelessWidget {
                             context
                                 .read<AuthenticationBloc>()
                                 .add(SignInWithGoogleEvent());
-                            print("Clicked");
+                            print("GOOGLE");
                           },
                           name: "Google",
                           logo: "assets/google.svg"),
                       const SizedBox(height: 16),
                       SocialButton(
-                          name: "Facebook", logo: "assets/facebook.svg"),
+                          onTap: () {
+                            context
+                                .read<AuthenticationBloc>()
+                                .add(SignInWithFacebookEvent());
+                            print("FACEBOOK");
+                          },
+                          name: "Facebook",
+                          logo: "assets/facebook.svg"),
                       const SizedBox(height: 16),
                       SocialButton(name: "Apple", logo: "assets/apple.svg"),
                     ],
                   );
                 } else if (state is AuthenticationSuccess) {
-                  return const Center(
-                    child: Text("Congrats"),
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(state.user.name!),
+                        Text(state.user.email!),
+                      ],
+                    ),
                   );
                 } else if (state is AuthenticationFailure) {
                   return Center(

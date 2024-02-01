@@ -6,9 +6,9 @@ abstract class AuthenticationState {}
 class AuthenticationInitial extends AuthenticationState {}
 
 class AuthenticationSuccess extends AuthenticationState {
-  final Map<String, dynamic> data;
+  final User user;
 
-  AuthenticationSuccess({required this.data});
+  AuthenticationSuccess({required this.user});
 }
 
 class AuthenticationFailure extends AuthenticationState {

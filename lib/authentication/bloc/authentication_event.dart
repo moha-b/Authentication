@@ -4,3 +4,5 @@ part of 'authentication_bloc.dart';
 abstract class AuthenticationEvent {}
 
 class SignInWithGoogleEvent extends AuthenticationEvent {}
+
+class SignInWithFacebookEvent extends AuthenticationEvent {}

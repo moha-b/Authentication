@@ -1,3 +1,4 @@
+import 'package:authentication/authentication/data/model/user_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meta/meta.dart';
 
@@ -13,21 +14,36 @@ class AuthenticationBloc
 
   AuthenticationBloc() : super(AuthenticationInitial()) {
     on<SignInWithGoogleEvent>(_signInWithGoogle);
+    on<SignInWithFacebookEvent>(_signInWihFacebook);
   }
 
   Future<void> _signInWithGoogle(
       SignInWithGoogleEvent event, Emitter<AuthenticationState> emit) async {
     try {
-      final Map<String, dynamic>? result =
-          await _authRepository.signInWithGoogle();
+      final user = await _authRepository.signInWithGoogle();
 
-      if (result != null) {
-        emit(AuthenticationSuccess(data: result));
+      if (user != null) {
+        emit(AuthenticationSuccess(user: user));
       } else {
         emit(AuthenticationFailure("Sign-in with Google failed"));
       }
     } catch (e) {
       emit(AuthenticationFailure("Error during Google Sign-In: $e"));
+    }
+  }
+
+  Future<void> _signInWihFacebook(
+      SignInWithFacebookEvent event, Emitter<AuthenticationState> emit) async {
+    try {
+      final user = await _authRepository.signInWithFacebook();
+
+      if (user != null) {
+        emit(AuthenticationSuccess(user: user));
+      } else {
+        emit(AuthenticationFailure("Sign-in with Facebook failed"));
+      }
+    } catch (e) {
+      emit(AuthenticationFailure("Error during Facebook Sign-In: $e"));
     }
   }
 }

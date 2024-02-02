@@ -1,20 +1,15 @@
+import 'package:authentication/authentication/bloc/authentication_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 
-class SocialButton extends StatelessWidget {
-  const SocialButton({
-    super.key,
-    this.onTap,
-    required this.name,
-    required this.logo,
-  });
-  final Function()? onTap;
-  final String name;
-  final String logo;
+class SignInWithGoogleButton extends StatelessWidget {
+  const SignInWithGoogleButton({super.key});
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onTap,
+      onTap: () => BlocProvider.of<AuthenticationBloc>(context)
+          .add(SignInWithGoogleEvent()),
       child: Container(
         width: 300,
         height: 48,
@@ -23,9 +18,9 @@ class SocialButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SvgPicture.asset(logo, width: 20, height: 20),
+            SvgPicture.asset("assets/google.svg", width: 20, height: 20),
             const SizedBox(width: 16),
-            Text("Continue with $name"),
+            const Text("Continue with Google"),
           ],
         ),
       ),

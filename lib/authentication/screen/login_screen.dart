@@ -1,5 +1,7 @@
 import 'package:authentication/authentication/bloc/authentication_bloc.dart';
-import 'package:authentication/authentication/screen/widgets/social_button.dart';
+import 'package:authentication/authentication/screen/widgets/facebook_button.dart';
+import 'package:authentication/authentication/screen/widgets/google_button.dart';
+import 'package:authentication/authentication/screen/widgets/twitter_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -18,31 +20,15 @@ class LoginScreen extends StatelessWidget {
             child: BlocBuilder<AuthenticationBloc, AuthenticationState>(
               builder: (context, state) {
                 if (state is AuthenticationInitial) {
-                  return Column(
+                  return const Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      SocialButton(
-                          onTap: () {
-                            context
-                                .read<AuthenticationBloc>()
-                                .add(SignInWithGoogleEvent());
-                            print("GOOGLE");
-                          },
-                          name: "Google",
-                          logo: "assets/google.svg"),
-                      const SizedBox(height: 16),
-                      SocialButton(
-                          onTap: () {
-                            context
-                                .read<AuthenticationBloc>()
-                                .add(SignInWithFacebookEvent());
-                            print("FACEBOOK");
-                          },
-                          name: "Facebook",
-                          logo: "assets/facebook.svg"),
-                      const SizedBox(height: 16),
-                      SocialButton(name: "Apple", logo: "assets/apple.svg"),
+                      SignInWithGoogleButton(),
+                      SizedBox(height: 16),
+                      SignInWithFacebookButton(),
+                      SizedBox(height: 16),
+                      SignInWithTwitterButton(),
                     ],
                   );
                 } else if (state is AuthenticationSuccess) {

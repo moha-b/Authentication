@@ -1,7 +1,9 @@
 import 'package:authentication/authentication/screen/login_screen.dart';
+import 'package:authentication/get_it.dart';
 import 'package:flutter/material.dart';
 
 void main() {
+  setupDI();
   runApp(const MyApp());
 }
 

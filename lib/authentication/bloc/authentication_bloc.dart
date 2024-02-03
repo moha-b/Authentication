@@ -1,16 +1,17 @@
 import 'package:authentication/authentication/data/model/user_model.dart';
+import 'package:authentication/get_it.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meta/meta.dart';
 
-import '../data/authentication_repo.dart';
-import '../data/authentication_repo_impl.dart';
+import '../data/repo/base/base.dart';
+import '../data/repo/impl/impl.dart';
 
 part 'authentication_event.dart';
 part 'authentication_state.dart';
 
 class AuthenticationBloc
     extends Bloc<AuthenticationEvent, AuthenticationState> {
-  final AuthRepository _authRepository = AuthRepoImpl();
+  final AuthRepository _auth = getIt.get<AuthRepoImpl>();
 
   AuthenticationBloc() : super(AuthenticationInitial()) {
     on<SignInWithGoogleEvent>(_signInWithGoogle);
@@ -20,13 +21,9 @@ class AuthenticationBloc
   Future<void> _signInWithGoogle(
       SignInWithGoogleEvent event, Emitter<AuthenticationState> emit) async {
     try {
-      final user = await _authRepository.signInWithGoogle();
+      final user = await _auth.signInWithGoogle();
 
-      if (user != null) {
-        emit(AuthenticationSuccess(user: user));
-      } else {
-        emit(AuthenticationFailure("Sign-in with Google failed"));
-      }
+      emit(AuthenticationSuccess(user: user));
     } catch (e) {
       emit(AuthenticationFailure("Error during Google Sign-In: $e"));
     }
@@ -35,13 +32,9 @@ class AuthenticationBloc
   Future<void> _signInWihFacebook(
       SignInWithFacebookEvent event, Emitter<AuthenticationState> emit) async {
     try {
-      final user = await _authRepository.signInWithFacebook();
+      final user = await _auth.signInWithFacebook();
 
-      if (user != null) {
-        emit(AuthenticationSuccess(user: user));
-      } else {
-        emit(AuthenticationFailure("Sign-in with Facebook failed"));
-      }
+      emit(AuthenticationSuccess(user: user));
     } catch (e) {
       emit(AuthenticationFailure("Error during Facebook Sign-In: $e"));
     }

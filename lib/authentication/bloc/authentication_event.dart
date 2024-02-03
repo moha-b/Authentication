@@ -6,3 +6,5 @@ abstract class AuthenticationEvent {}
 class SignInWithGoogleEvent extends AuthenticationEvent {}
 
 class SignInWithFacebookEvent extends AuthenticationEvent {}
+
+class SignInWithTwitterEvent extends AuthenticationEvent {}

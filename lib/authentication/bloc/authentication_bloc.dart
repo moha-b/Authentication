@@ -17,6 +17,7 @@ class AuthenticationBloc
     on<SignInWithGoogleEvent>(_signInWithGoogle);
     on<SignInWithFacebookEvent>(_signInWihFacebook);
     on<SignInWithTwitterEvent>(_signInWihTwitter);
+    on<SignOutEvent>(_signOut);
   }
 
   Future<void> _signInWithGoogle(
@@ -49,6 +50,16 @@ class AuthenticationBloc
       emit(AuthenticationSuccess(user: user));
     } catch (e) {
       emit(AuthenticationFailure("Error during Twitter Sign-In: $e"));
+    }
+  }
+
+  Future<void> _signOut(
+      SignOutEvent event, Emitter<AuthenticationState> emit) async {
+    try {
+      await _auth.signOut();
+      emit(AuthenticationInitial());
+    } catch (e) {
+      emit(AuthenticationFailure("Error during Sign-Out: $e"));
     }
   }
 }

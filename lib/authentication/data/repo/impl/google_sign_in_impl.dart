@@ -24,8 +24,8 @@ class GoogleSignInImpl implements IGoogleSignIn {
   }
 
   @override
-  Future<void> signOut() {
-    // TODO: implement signOut
-    throw UnimplementedError();
+  Future<void> signOut() async {
+    await _googleSignIn.signOut();
+    print("Sign-out from \'Google\'");
   }
 }

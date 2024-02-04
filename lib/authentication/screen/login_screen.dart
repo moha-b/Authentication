@@ -2,6 +2,7 @@ import 'package:authentication/authentication/bloc/authentication_bloc.dart';
 import 'package:authentication/authentication/screen/widgets/facebook_button.dart';
 import 'package:authentication/authentication/screen/widgets/google_button.dart';
 import 'package:authentication/authentication/screen/widgets/twitter_button.dart';
+import 'package:authentication/authentication/screen/widgets/user_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -32,14 +33,10 @@ class LoginScreen extends StatelessWidget {
                     ],
                   );
                 } else if (state is AuthenticationSuccess) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(state.user.name!),
-                        Text(state.user.email!),
-                      ],
-                    ),
+                  return UserData(
+                    name: state.user.name,
+                    email: state.user.email,
+                    picture: state.user.picture,
                   );
                 } else if (state is AuthenticationFailure) {
                   return Center(

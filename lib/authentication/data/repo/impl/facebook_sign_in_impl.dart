@@ -25,8 +25,8 @@ class FacebookSignInImpl implements IFacebookSignIn {
   }
 
   @override
-  Future<void> signOut() {
-    // TODO: implement signOut
-    throw UnimplementedError();
+  Future<void> signOut() async {
+    await FacebookAuth.instance.logOut();
+    print("Sign-out from \'Facbook\'");
   }
 }

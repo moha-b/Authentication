@@ -30,11 +30,20 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  firebase_core: ^2.25.3
-  firebase_auth: ^4.17.3
-  cloud_firestore: ^4.15.3
+  firebase_core: ^2.25.4
+  firebase_auth: ^4.17.4
+  cloud_firestore: ^4.15.4
+  firebase_storage: ^11.6.5
+  shared_preferences: ^2.2.2
   flutter_bloc: ^8.1.3
-  cupertino_icons: ^1.0.2
+  cached_network_image: ^3.3.1
+  image_picker: ^1.0.7
+  smooth_page_indicator:
+  progress_dialog:
+    git:
+      url: https://github.com/mostafaAbdelazim/progress_dialog.git
+  sn_progress_dialog: ^1.1.3
+  cupertino_icons: ^1.0.6
 
 dev_dependencies:
   flutter_test:

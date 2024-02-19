@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'custom_text_form_field.dart';
@@ -22,6 +24,14 @@ class _SignUpFormState extends State<SignUpForm> {
   final TextEditingController addressController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController genderController = TextEditingController();
+  late final _auth;
+  late final db;
+  @override
+  void initState() {
+    _auth = FirebaseAuth.instance;
+    db = FirebaseFirestore.instance;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +72,7 @@ class _SignUpFormState extends State<SignUpForm> {
               return null;
             },
           ),
+          const SizedBox(height: 16),
           CustomTextFormField(
             labelText: 'Password',
             controller: passwordController,
@@ -110,7 +121,7 @@ class _SignUpFormState extends State<SignUpForm> {
           const SizedBox(height: 16),
           CustomTextFormField(
             labelText: 'Gender',
-            controller: ageController,
+            controller: genderController,
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Please enter your gender';
@@ -122,9 +133,10 @@ class _SignUpFormState extends State<SignUpForm> {
           ElevatedButton(
             onPressed: () {
               if (_formKey.currentState!.validate()) {
-                // Process the form data
-                // You can access the form fields using _formKey.currentState.fields
-                // For example, _formKey.currentState.fields['name'].value
+                _signUp(
+                  emailController.value.toString(),
+                  passwordController.value.toString(),
+                );
               }
             },
             child: const Text('Sign Up'),
@@ -137,5 +149,23 @@ class _SignUpFormState extends State<SignUpForm> {
         ],
       ),
     );
+  }
+
+  _signUp(String email, String password) async {
+    final userCredential = await _auth.createUserWithEmailAndPassword(
+        email: email, password: password);
+    // Create a new user with a first and last name
+    final user = <String, dynamic>{
+      "name": nameController.value,
+      "username": usernameController.value,
+      "phone": phoneController.value,
+      "email": emailController.value,
+      "password": passwordController.value,
+      "age": ageController.value,
+      "address": addressController.value,
+    };
+
+    db.collection("hab").add(user).then((DocumentReference doc) =>
+        print('DocumentSnapshot added with ID: ${doc.id}'));
   }
 }

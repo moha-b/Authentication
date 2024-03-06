@@ -1,4 +1,5 @@
 import 'package:authentication/dio_helper.dart';
+import 'package:authentication/more_questions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -29,7 +30,7 @@ class MyHomePage extends StatelessWidget {
       body: Center(
         child: ElevatedButton(
           onPressed: () {
-            showQuestions(context);
+            showCustomBottomSheet(context);
           },
           child: const Text('Show BottomSheet'),
         ),
@@ -58,7 +59,7 @@ class CustomBottomSheet extends StatefulWidget {
 
 class _CustomBottomSheetState extends State<CustomBottomSheet> {
   late ExamQuestionsCubit _examQuestionsCubit;
-  List<Data> _searchResults = [];
+  Map<int, Data> _searchResultsMap = {};
   String _selectedFilter = 'All';
 
   @override
@@ -193,14 +194,13 @@ class _CustomBottomSheetState extends State<CustomBottomSheet> {
 
   void _searchQuestions(String query) {
     setState(() {
-      if (query.isEmpty) {
-        _searchResults.clear();
-      } else {
-        _searchResults = _examQuestionsCubit.model?.data!
-                .where((question) =>
-                    question.title!.toLowerCase().contains(query.toLowerCase()))
-                .toList() ??
-            [];
+      _searchResultsMap.clear();
+
+      if (query.isNotEmpty && _examQuestionsCubit.model?.data != null) {
+        _searchResultsMap = Map.fromEntries(
+          _examQuestionsCubit.model!.data!.asMap().entries.where((entry) =>
+              entry.value.title!.toLowerCase().contains(query.toLowerCase())),
+        );
       }
     });
   }
@@ -208,36 +208,29 @@ class _CustomBottomSheetState extends State<CustomBottomSheet> {
   List<Data> _filterQuestions() {
     switch (_selectedFilter) {
       case 'Correct':
-        return _searchResults.isNotEmpty
-            ? _searchResults
-                .where((question) =>
-                    question.studentAnswer != null &&
-                    question.studentAnswer == 'Correct')
-                .toList()
-            : _examQuestionsCubit.model?.data
-                    ?.where((question) =>
-                        question.studentAnswer != null &&
-                        question.studentAnswer == 'Correct')
-                    .toList() ??
-                [];
+        return _filterResults('Correct');
       case 'Wrong':
-        return _searchResults.isNotEmpty
-            ? _searchResults
-                .where((question) =>
-                    question.studentAnswer != null &&
-                    question.studentAnswer == 'Wrong')
-                .toList()
-            : _examQuestionsCubit.model?.data
-                    ?.where((question) =>
-                        question.studentAnswer != null &&
-                        question.studentAnswer == 'Wrong')
-                    .toList() ??
-                [];
+        return _filterResults('Wrong');
       default:
-        return _searchResults.isNotEmpty
-            ? _searchResults
+        return _searchResultsMap.isNotEmpty
+            ? _searchResultsMap.values.toList()
             : _examQuestionsCubit.model?.data ?? [];
     }
+  }
+
+  List<Data> _filterResults(String answerType) {
+    return _searchResultsMap.isNotEmpty
+        ? _searchResultsMap.values
+            .where((question) =>
+                question.studentAnswer != null &&
+                question.studentAnswer == answerType)
+            .toList()
+        : _examQuestionsCubit.model?.data
+                ?.where((question) =>
+                    question.studentAnswer != null &&
+                    question.studentAnswer == answerType)
+                .toList() ??
+            [];
   }
 }
 

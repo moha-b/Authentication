@@ -59,6 +59,7 @@ class CustomBottomSheet extends StatefulWidget {
 class _CustomBottomSheetState extends State<CustomBottomSheet> {
   late ExamQuestionsCubit _examQuestionsCubit;
   List<Data> _searchResults = [];
+  String _selectedFilter = 'All';
 
   @override
   void initState() {
@@ -132,21 +133,31 @@ class _CustomBottomSheetState extends State<CustomBottomSheet> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                IconButton(
-                  onPressed: () {},
-                  style: IconButton.styleFrom(
-                    shape: RoundedRectangleBorder(
+                PopupMenuButton<String>(
+                  onSelected: (value) {
+                    setState(() {
+                      _selectedFilter = value;
+                    });
+                  },
+                  itemBuilder: (BuildContext context) {
+                    return ['All', 'Correct', 'Wrong'].map((String choice) {
+                      return PopupMenuItem<String>(
+                        value: choice,
+                        child: Text(choice),
+                      );
+                    }).toList();
+                  },
+                  child: Container(
+                    padding: EdgeInsets.all(8.0),
+                    decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
-                      side: const BorderSide(
+                      border: Border.all(
                         color: Color(0xffE5E7EB),
                       ),
                     ),
+                    child: Icon(Icons.sort_rounded, color: Color(0xff9CA3AF)),
                   ),
-                  icon: const Icon(
-                    Icons.sort_rounded,
-                    color: Color(0xff9CA3AF),
-                  ),
-                )
+                ),
               ],
             ),
           ),
@@ -167,18 +178,14 @@ class _CustomBottomSheetState extends State<CustomBottomSheet> {
   }
 
   Widget _buildQuestionList() {
+    final filteredQuestions = _filterQuestions();
     return Expanded(
       child: ListView.separated(
-        itemCount: _searchResults.isNotEmpty
-            ? _searchResults.length
-            : _examQuestionsCubit.model?.data?.length ?? 0,
+        itemCount: filteredQuestions.length,
         padding: const EdgeInsets.only(bottom: 16),
         separatorBuilder: (BuildContext context, int index) => const Divider(),
         itemBuilder: (BuildContext context, int index) {
-          final questions = _searchResults.isNotEmpty
-              ? _searchResults
-              : _examQuestionsCubit.model?.data ?? [];
-          return ReviewQuestions(list: questions, index: index);
+          return ReviewQuestions(list: filteredQuestions, index: index);
         },
       ),
     );
@@ -189,7 +196,6 @@ class _CustomBottomSheetState extends State<CustomBottomSheet> {
       if (query.isEmpty) {
         _searchResults.clear();
       } else {
-        // Filter questions based on the search query
         _searchResults = _examQuestionsCubit.model?.data!
                 .where((question) =>
                     question.title!.toLowerCase().contains(query.toLowerCase()))
@@ -197,6 +203,41 @@ class _CustomBottomSheetState extends State<CustomBottomSheet> {
             [];
       }
     });
+  }
+
+  List<Data> _filterQuestions() {
+    switch (_selectedFilter) {
+      case 'Correct':
+        return _searchResults.isNotEmpty
+            ? _searchResults
+                .where((question) =>
+                    question.studentAnswer != null &&
+                    question.studentAnswer == 'Correct')
+                .toList()
+            : _examQuestionsCubit.model?.data
+                    ?.where((question) =>
+                        question.studentAnswer != null &&
+                        question.studentAnswer == 'Correct')
+                    .toList() ??
+                [];
+      case 'Wrong':
+        return _searchResults.isNotEmpty
+            ? _searchResults
+                .where((question) =>
+                    question.studentAnswer != null &&
+                    question.studentAnswer == 'Wrong')
+                .toList()
+            : _examQuestionsCubit.model?.data
+                    ?.where((question) =>
+                        question.studentAnswer != null &&
+                        question.studentAnswer == 'Wrong')
+                    .toList() ??
+                [];
+      default:
+        return _searchResults.isNotEmpty
+            ? _searchResults
+            : _examQuestionsCubit.model?.data ?? [];
+    }
   }
 }
 

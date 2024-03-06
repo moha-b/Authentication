@@ -22,51 +22,65 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => ExamQuestionsCubit()..getExamQuestions(),
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('BottomSheet Example'),
-        ),
-        body: Center(
-          child: BlocConsumer<ExamQuestionsCubit, ExamQuestionsState>(
-            listener: (context, state) async {
-              if (state is ExamQuestionsSuccess) {
-                BlocProvider.value(
-                  value: BlocProvider.of<ExamQuestionsCubit>(context),
-                  child: await showModalBottomSheet(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return CustomBottomSheet(model: state.model);
-                    },
-                  ),
-                );
-              }
-            },
-            builder: (context, state) {
-              return ElevatedButton(
-                onPressed: () {
-                  context.read<ExamQuestionsCubit>().getExamQuestions();
-                },
-                child: const Text('Show BottomSheet'),
-              );
-            },
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('BottomSheet Example'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            showQuestions(context);
+          },
+          child: const Text('Show BottomSheet'),
         ),
       ),
     );
   }
+
+  void showQuestions(context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext _) {
+        return CustomBottomSheet();
+      },
+    );
+  }
 }
 
-class CustomBottomSheet extends StatelessWidget {
+class CustomBottomSheet extends StatefulWidget {
   const CustomBottomSheet({
     Key? key,
-    required this.model,
   }) : super(key: key);
-  final ExamQuestionsModel model;
+
+  @override
+  _CustomBottomSheetState createState() => _CustomBottomSheetState();
+}
+
+class _CustomBottomSheetState extends State<CustomBottomSheet> {
+  late ExamQuestionsCubit _examQuestionsCubit;
+  List<Data> _searchResults = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _examQuestionsCubit = ExamQuestionsCubit();
+  }
+
+  @override
+  void dispose() {
+    _examQuestionsCubit.close();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    return BlocProvider.value(
+      value: _examQuestionsCubit..getExamQuestions(),
+      child: _buildBottomSheetContent(),
+    );
+  }
+
+  Widget _buildBottomSheetContent() {
     return Container(
       padding: const EdgeInsets.only(left: 24, right: 24, top: 24),
       decoration: const BoxDecoration(
@@ -99,8 +113,7 @@ class CustomBottomSheet extends StatelessWidget {
               children: [
                 Expanded(
                   child: TextField(
-                    onChanged: (query) =>
-                        context.read<ExamQuestionsCubit>().search(query),
+                    onChanged: (query) => _searchQuestions(query),
                     decoration: const InputDecoration(
                       hintText: 'Search for question',
                       prefixIcon: Icon(Icons.search),
@@ -139,27 +152,51 @@ class CustomBottomSheet extends StatelessWidget {
           ),
           BlocBuilder<ExamQuestionsCubit, ExamQuestionsState>(
             builder: (context, state) {
-              return Expanded(
-                child: ListView.separated(
-                  itemCount: (state is ExamQuestionSearchResultsState)
-                      ? state.searchResults.length
-                      : model.data!.length,
-                  padding: const EdgeInsets.only(bottom: 16),
-                  separatorBuilder: (BuildContext context, int index) =>
-                      const Divider(),
-                  itemBuilder: (BuildContext context, int index) {
-                    final questions = (state is ExamQuestionSearchResultsState)
-                        ? state.searchResults
-                        : model.data;
-                    return ReviewQuestions(list: questions, index: index);
-                  },
-                ),
-              );
+              if (state is ExamQuestionsSuccess) {
+                return _buildQuestionList();
+              } else if (state is ExamQuestionsLoading) {
+                return Center(child: CircularProgressIndicator());
+              } else {
+                return Center(child: Text("Something went wrong"));
+              }
             },
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildQuestionList() {
+    return Expanded(
+      child: ListView.separated(
+        itemCount: _searchResults.isNotEmpty
+            ? _searchResults.length
+            : _examQuestionsCubit.model?.data?.length ?? 0,
+        padding: const EdgeInsets.only(bottom: 16),
+        separatorBuilder: (BuildContext context, int index) => const Divider(),
+        itemBuilder: (BuildContext context, int index) {
+          final questions = _searchResults.isNotEmpty
+              ? _searchResults
+              : _examQuestionsCubit.model?.data ?? [];
+          return ReviewQuestions(list: questions, index: index);
+        },
+      ),
+    );
+  }
+
+  void _searchQuestions(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        _searchResults.clear();
+      } else {
+        // Filter questions based on the search query
+        _searchResults = _examQuestionsCubit.model?.data!
+                .where((question) =>
+                    question.title!.toLowerCase().contains(query.toLowerCase()))
+                .toList() ??
+            [];
+      }
+    });
   }
 }
 

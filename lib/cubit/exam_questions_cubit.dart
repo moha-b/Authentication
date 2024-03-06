@@ -11,7 +11,10 @@ class ExamQuestionsCubit extends Cubit<ExamQuestionsState> {
   ExamQuestionsModel? model;
 
   void getExamQuestions() async {
+    emit(ExamQuestionsInitial());
+
     try {
+      emit(ExamQuestionsLoading());
       var result = await DioHelper.getData(
         url: '/examQuestions',
         token: 'Bearer 17|laAM4n9VKAtZbWzMZPpT8rpprwEMLGVkkOzEqith',

@@ -1,6 +1,12 @@
+import 'package:authentication/dio_helper.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'cubit/exam_questions_cubit.dart';
+import 'exam_questions_model.dart';
 
 void main() {
+  DioHelper.init();
   runApp(MyApp());
 }
 
@@ -16,21 +22,36 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('BottomSheet Example'),
-      ),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            showModalBottomSheet(
-              context: context,
-              builder: (BuildContext context) {
-                return CustomBottomSheet();
-              },
-            );
-          },
-          child: const Text('Show BottomSheet'),
+    return BlocProvider(
+      create: (context) => ExamQuestionsCubit()..getExamQuestions(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('BottomSheet Example'),
+        ),
+        body: Center(
+          child: BlocConsumer<ExamQuestionsCubit, ExamQuestionsState>(
+            listener: (context, state) async {
+              if (state is ExamQuestionsSuccess) {
+                BlocProvider.value(
+                  value: BlocProvider.of<ExamQuestionsCubit>(context),
+                  child: await showModalBottomSheet(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return CustomBottomSheet(model: state.model);
+                    },
+                  ),
+                );
+              }
+            },
+            builder: (context, state) {
+              return ElevatedButton(
+                onPressed: () {
+                  context.read<ExamQuestionsCubit>().getExamQuestions();
+                },
+                child: const Text('Show BottomSheet'),
+              );
+            },
+          ),
         ),
       ),
     );
@@ -40,7 +61,9 @@ class MyHomePage extends StatelessWidget {
 class CustomBottomSheet extends StatelessWidget {
   const CustomBottomSheet({
     Key? key,
+    required this.model,
   }) : super(key: key);
+  final ExamQuestionsModel model;
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +86,10 @@ class CustomBottomSheet extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              IconButton(onPressed: () {}, icon: const Icon(Icons.close))
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close),
+              )
             ],
           ),
           Container(
@@ -71,9 +97,11 @@ class CustomBottomSheet extends StatelessWidget {
             margin: const EdgeInsets.symmetric(vertical: 16),
             child: Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: TextField(
-                    decoration: InputDecoration(
+                    onChanged: (query) =>
+                        context.read<ExamQuestionsCubit>().search(query),
+                    decoration: const InputDecoration(
                       hintText: 'Search for question',
                       prefixIcon: Icon(Icons.search),
                       contentPadding:
@@ -109,14 +137,25 @@ class CustomBottomSheet extends StatelessWidget {
               ],
             ),
           ),
-          Expanded(
-            child: ListView.separated(
-              itemCount: 10,
-              padding: const EdgeInsets.only(bottom: 16),
-              separatorBuilder: (BuildContext context, int index) => Divider(),
-              itemBuilder: (BuildContext context, int index) =>
-                  Question(index: index),
-            ),
+          BlocBuilder<ExamQuestionsCubit, ExamQuestionsState>(
+            builder: (context, state) {
+              return Expanded(
+                child: ListView.separated(
+                  itemCount: (state is ExamQuestionSearchResultsState)
+                      ? state.searchResults.length
+                      : model.data!.length,
+                  padding: const EdgeInsets.only(bottom: 16),
+                  separatorBuilder: (BuildContext context, int index) =>
+                      const Divider(),
+                  itemBuilder: (BuildContext context, int index) {
+                    final questions = (state is ExamQuestionSearchResultsState)
+                        ? state.searchResults
+                        : model.data;
+                    return ReviewQuestions(list: questions, index: index);
+                  },
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -124,12 +163,16 @@ class CustomBottomSheet extends StatelessWidget {
   }
 }
 
-class Question extends StatelessWidget {
-  const Question({
+class ReviewQuestions extends StatelessWidget {
+  const ReviewQuestions({
     super.key,
+    required this.list,
     required this.index,
   });
+
+  final List<Data>? list;
   final int index;
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -158,23 +201,79 @@ class Question extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: Text(
-                      "Why People skills required to be an effective video editor?"),
+                  child: Text(list![index].title!),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class Questions extends StatelessWidget {
+  const Questions({
+    super.key,
+    required this.list,
+    required this.index,
+  });
+
+  final List<Data>? list;
+  final int index;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 72,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 44,
+            height: 34,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              color: const Color(0xffF3F4FF),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text((index + 1).toString(),
+                    style: const TextStyle(color: Color(0xff0225FF))),
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 16,
+                  color: Color(0xff0225FF),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(list![index].title!),
                 ),
                 Expanded(
                   child: Row(
                     children: [
                       Icon(
                         Icons.circle,
-                        color: Colors.green,
+                        color: list![index].studentAnswer.toString() == 'right'
+                            ? Colors.green
+                            : Colors.redAccent,
                         size: 8,
                       ),
-                      SizedBox(width: 5),
-                      Text("Right"),
+                      const SizedBox(width: 5),
+                      Text(list![index].studentAnswer.toString()),
                     ],
                   ),
                 ),

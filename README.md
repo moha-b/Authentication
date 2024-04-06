@@ -4,7 +4,6 @@
 
 # Content
 ![cover](.github/repo-content.png)
-### Let's Dive Into the Main
 
 ## Google Sign-In Implementation without Firebase
 ### Introduction
@@ -91,5 +90,47 @@ dependencies {
     return User.empty();
   }
 ```
-for better understanding head to [Authentication Folder](lib/authentication)
+for better understanding head to [Google Sign-in File](lib/authentication/data/repo/impl/google_sign_in_impl.dart)
 
+## Facebook Sign-In Implementation without Firebase
+### Introduction
+
+This guide offers a detailed walkthrough on implementing Facebook Sign-In in your Flutter application without relying on Firebase. By following these steps, you can seamlessly integrate Facebook authentication into your app.
+
+### Steps
+
+1. Add Dependencies
+   Make sure to include the required dependencies in your `pubspec.yaml` file:
+```yaml
+dependencies:
+  flutter_facebook_auth: ^6.0.4
+```
+Run `flutter pub get` to fetch the new dependencies.
+
+2. Configure Facebook App
+   - Visit the [Flutter Facebook Auth](https://facebook.meedu.app/docs/6.x.x/intro) portal and follow the steps it's more than enough.
+3. Implementation
+```dart
+Future<User> signInWithFacebook() async {
+    try {
+      final LoginResult result = await FacebookAuth.instance.login();
+      if (result.status == LoginStatus.success) {
+        final AccessToken accessToken = result.accessToken!;
+        final userData = await FacebookAuth.instance.getUserData();
+
+        return User(
+          name: userData["name"],
+          email: userData["email"],
+          picture: userData["picture"]["data"]["url"],
+        );
+      } else {
+        print("Facebook Sign-In failed. Status: ${result.status}");
+        print("Message: ${result.message}");
+      }
+    } catch (error) {
+      print("Error during Facebook Sign-In: $error");
+    }
+    return User.empty();
+  }
+```
+for better understanding head to [Facebook Sign-in File](lib/authentication/data/repo/impl/facebook_sign_in_impl.dart)
